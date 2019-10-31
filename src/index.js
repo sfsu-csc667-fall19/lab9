@@ -8,6 +8,7 @@ import rootReducer from './redux/reducers/rootReducer';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { setActiveUsers } from './redux/actions/userActions';
+import { updateNotes } from './redux/actions/notesActions';
 
 const ws = new WebSocket('ws://localhost:4000');
 const store = createStore(rootReducer);
@@ -17,12 +18,22 @@ ws.onclose = () => {
 };
 
 ws.onopen = () => {
-  store.dispatch(setActiveUsers('test'));
+  // store.dispatch(setActiveUsers('test'));
   console.log('connection has opened!');
 };
 
 ws.onmessage = (message) => {
-  console.log(message.data);
+  const messageObject = JSON.parse(message.data);
+  switch (messageObject.type) {
+    case 'UPDATE_USER_COUNT':
+      store.dispatch(setActiveUsers(messageObject.count));
+      break;
+    case 'UPDATE_MESSAGES':
+      // put it here
+      store.dispatch(updateNotes(messageObject.notes));
+      break;
+  }
+  console.log(messageObject);
 };
 
 ws.onerror = (e) => {
